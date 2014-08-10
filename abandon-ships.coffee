@@ -21,7 +21,13 @@ ensureArray = (thing)->
     return [thing]
 
 vesselSize = (partCount)->
-    Math.floor(Math.min(4, Math.log(partCount)/Math.log(5)))
+    # 1-30 parts: tiny
+    # 30-66 parts: small
+    # 67-240 parts: medium
+    # 240-1320 parts: large
+    # 1320+ parts: huge
+    y = Math.log(partCount-24)/Math.log(6)
+    Math.floor(Math.min(4, Math.max(0, y)))
 
 processVessels = (save)->
     return unless save?.GAME?.FLIGHTSTATE?.VESSEL
@@ -42,7 +48,7 @@ processVessels = (save)->
                     resource.amount = 0
                 part.RESOURCE = resources
 
-        if vessel.type isnt 'Debris'
+        if vessel.type isnt "Debris"
             # mark as trackable
             vessel.DISCOVERY ?= {}
             vessel.DISCOVERY.lastObservedTime ?= 0
