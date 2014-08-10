@@ -10,3 +10,5 @@ done
 ./merge-saves.coffee saves/0.24.sfs.json saves/*derelict* > saves/merged.json
 
 ./json2sfs.coffee < saves/merged.json > saves/merged.sfs
+
+rm saves/*.json

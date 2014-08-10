@@ -20,6 +20,9 @@ ensureArray = (thing)->
     return thing if thing instanceof Array
     return [thing]
 
+vesselSize = (partCount)->
+    Math.floor(Math.min(4, Math.log(partCount)/Math.log(5)))
+
 processVessels = (save)->
     return unless save?.GAME?.FLIGHTSTATE?.VESSEL
     vessels = ensureArray(save.GAME.FLIGHTSTATE.VESSEL)
@@ -39,16 +42,13 @@ processVessels = (save)->
                     resource.amount = 0
                 part.RESOURCE = resources
 
-        # mark as trackable
-        if vessel.DISCOVERY
+        if vessel.type isnt 'Debris'
+            # mark as trackable
+            vessel.DISCOVERY ?= {}
+            vessel.DISCOVERY.lastObservedTime ?= 0
+            vessel.DISCOVERY.lifetime ?= "Infinity"
+            vessel.DISCOVERY.refTime ?= "Infinity"
             vessel.DISCOVERY.state = 1
-        else
-            vessel.DISCOVERY = {
-                "state": "1",
-                "lastObservedTime": "0",
-                "lifetime": "Infinity",
-                "refTime": "Infinity",
-                "size": "2"
-            }
+            vessel.DISCOVERY.size = vesselSize(parts.length)
 
     return save
