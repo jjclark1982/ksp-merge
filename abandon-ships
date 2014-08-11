@@ -49,6 +49,10 @@ processVessels = (save)->
                     resource.amount = 0
                 part.RESOURCE = resources
 
+        # avoid importing flags
+        if vessel.type is "Flag"
+            vessel.pid = "00000000000000000000000000000000"
+
         unless vessel.type in ["Debris", "SpaceObject"]
             # mark as trackable
             vessel.DISCOVERY ?= {}
