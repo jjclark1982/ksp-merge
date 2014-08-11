@@ -3,8 +3,8 @@
 # remove crew and fuel from vessels
 # usage: $0 < persistent.json > derelicts.json
 
-data = ''
 count = 0
+data = ''
 process.stdin.on("data", (chunk)->
     data += chunk
 )
@@ -21,13 +21,14 @@ ensureArray = (thing)->
     return [thing]
 
 vesselSize = (partCount)->
-    # 1-30 parts: tiny
-    # 30-66 parts: small
-    # 67-240 parts: medium
-    # 240-1320 parts: large
-    # 1320+ parts: huge
-    y = Math.log(partCount-24)/Math.log(6)
-    Math.floor(Math.min(4, Math.max(0, y)))
+    # 1 - 49 parts: tiny
+    # 50 - 91 parts: small
+    # 92 - 385 parts: medium
+    # 386 - 2400 parts: large
+    # 2400+ parts: huge
+    x = Math.max(1, partCount-43)
+    y = Math.log(x)/Math.log(7)
+    Math.floor(Math.min(4, y))
 
 processVessels = (save)->
     return unless save?.GAME?.FLIGHTSTATE?.VESSEL
@@ -48,13 +49,15 @@ processVessels = (save)->
                     resource.amount = 0
                 part.RESOURCE = resources
 
-        if vessel.type isnt "Debris"
+        unless vessel.type in ["Debris", "SpaceObject"]
             # mark as trackable
             vessel.DISCOVERY ?= {}
             vessel.DISCOVERY.lastObservedTime ?= 0
             vessel.DISCOVERY.lifetime ?= "Infinity"
             vessel.DISCOVERY.refTime ?= "Infinity"
-            vessel.DISCOVERY.state = 1
+            vessel.DISCOVERY.state ?= -1
+            if parseInt(vessel.DISCOVERY.state) is -1
+                vessel.DISCOVERY.state = 21 # identified, untracked
             vessel.DISCOVERY.size = vesselSize(parts.length)
 
     return save
