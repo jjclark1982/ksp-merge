@@ -17,17 +17,34 @@ process.stdin.on("end", ->
 )
 
 ensureArray = (thing)->
-    return thing if thing instanceof Array
-    return [thing]
+    if thing instanceof Array then thing else [thing]
 
-vesselSize = (partCount)->
-    # 1 - 49 parts: tiny
-    # 50 - 91 parts: small
-    # 92 - 385 parts: medium
-    # 386 - 2400 parts: large
-    # 2400+ parts: huge
-    x = Math.max(1, partCount-43)
-    y = Math.log(x)/Math.log(7)
+totalMass = (vessel)->
+    total = 0
+    for part in ensureArray(vessel.PART)
+        mass = parseFloat(part.mass)
+        if mass
+            total += mass
+    return total
+
+vesselSize = (vessel)->
+    # 0 - 5 tons: tiny
+    # 5 - 17 tons: small
+    # 17 - 65 tons: medium
+    # 65 - 257 tons: large
+    # 257+ tons: huge
+    tons = totalMass(vessel)
+    size = Math.log(Math.max(1, tons-1))/Math.log(4)
+    return Math.floor(Math.min(4, size))
+
+    # 1 - 50 parts: tiny
+    # 50 - 140 parts: small
+    # 140 - 410 parts: medium
+    # 410 - 1220 parts: large
+    # 1220+ parts: huge
+    partCount = ensureArray(vessel.PART).length
+    x = Math.max(1, (partCount-5)/15)
+    y = Math.log(x)/Math.log(3)
     Math.floor(Math.min(4, y))
 
 processVessels = (save)->
@@ -62,6 +79,6 @@ processVessels = (save)->
             vessel.DISCOVERY.state ?= -1
             if parseInt(vessel.DISCOVERY.state) is -1
                 vessel.DISCOVERY.state = 21 # identified, untracked
-            vessel.DISCOVERY.size = vesselSize(parts.length)
+            vessel.DISCOVERY.size = vesselSize(vessel)
 
     return save
